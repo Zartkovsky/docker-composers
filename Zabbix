@@ -1,0 +1,62 @@
+version: "3.7"
+
+services:
+  postgres:
+    image: postgres:latest
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: ZabbixPassword
+      POSTGRES_USER: ZabbixUser
+      POSTGRES_DB: ZabbixDatabase
+    networks:
+      - overlay
+
+  zabbix-server-pgsql:
+    image: zabbix/zabbix-server-pgsql:latest
+    env_file:
+      - .env_db_pgsql
+      - .env_srv
+    ports:
+      - "10051:10051"
+    links:
+      - postgres:postgres
+    networks:
+      - overlay
+
+  zabbix-web-nginx-pgsql:
+    image: zabbix/zabbix-web-nginx-pgsql:latest
+    env_file:
+      - .env_db_pgsql
+      - .env_web
+    ports:
+      - "81:8080"
+    links:
+      - postgres:postgres
+      - zabbix-server-pgsql:zabbix-server-pgsql
+    networks:
+      - overlay
+
+#  zabbix-proxy-mysql:
+#    image: zabbix/zabbix-proxy-mysql:latest
+#    enviroment:
+#    ports:
+#      - "5432:5432"
+#    networks:
+#      - overlay
+
+#  zabbix-java-gateway:
+#    image: zabbix/zabbix-java-gateway:latest
+#    networks:
+#      - overlay
+
+#  zabbix-snmptraps:
+#    image: zabbix/zabbix-snmptraps:latest
+#    ports:
+#      - "5432:5432"
+#    networks:
+#      - overlay
+
+networks:
+  overlay:
